@@ -1,2 +1,5 @@
-# deadswitch-combat-discord-bot
-Deadswitch Combat Discord Bot
+# Deadswitch Combat Discord Bot
+
+Official Discord bot for Deadswitch Combat!
+
+https://deadswitchcombat.com
