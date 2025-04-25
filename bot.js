@@ -34,11 +34,12 @@ bot.on("ready", (evt) =>
 
 bot.on("message", async (user, userID, channelID, message, evt) =>
 {
+    console.log(user, userID, channelID, message, evt);
     if (message.substring(0, 1) === "!") 
     {
-        logger.info(args);
         var args = message.substring(1).split(" ");
         var cmd = args[0];
+        logger.info(args);
         switch (cmd) 
         {            
             case "getPlayer":
