@@ -79,6 +79,10 @@ async function requestPlayer(channelID, username)
                     value: "Level " + player.level + (player.prestige > 0 ? (" Prestige " + player.prestige) : "")
                 },
                 {
+                    name: "Total XP",
+                    value: formatNum(Math.max(player.xp, player.totalXP || player.xp))
+                },
+                {
                     name: "XP",
                     value: formatNum(player.xp)
                 }
@@ -87,10 +91,6 @@ async function requestPlayer(channelID, username)
                 {
                     name: "Kills",
                     value: formatNum(player.stats.kills)
-                },
-                {
-                    name: "Shots Fired",
-                    value: formatNum(player.stats.shotsFired)
                 },
                 {
                     name: "Join Date",
