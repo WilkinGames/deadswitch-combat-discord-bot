@@ -1,0 +1,16 @@
+{
+    "main": "bot.js",
+    "type": "commonjs",
+    "scripts": {
+        "start": "node bot.js"
+    },
+    "dependencies": {
+        "@types/node": "^22.15.0",
+        "discord.io": "github:izy521/discord.io",
+        "node-fetch": "^2.6.7",
+        "winston": "^3.11.0"
+    },
+    "devDependencies": {
+        "dotenv": "^16.5.0"
+    }
+}
