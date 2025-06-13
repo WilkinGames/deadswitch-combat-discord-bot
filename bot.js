@@ -158,43 +158,67 @@ async function requestOnlinePlayers(channelID)
     try
     {
         const res = await fetch("https://dsc.wilkingames.net/players");
-        const json = await res.json();
+        const players = await res.json();
 
-        const players = json?.players;
-        if (Array.isArray(players) && players.length > 0)
+        if (!Array.isArray(players) || players.length === 0)
         {
-            // Limit output to avoid exceeding Discord message size
-            const maxPlayers = 25;
-            const limitedPlayers = players.slice(0, maxPlayers);
-            const playerNames = limitedPlayers.map(p => `• ${p.name}`).join("\n");
-
-            bot.sendMessage({
-                to: channelID,
-                message: "",
-                embed: {
-                    color: 14177600,
-                    title: `Online Players (${players.length})`,
-                    description: playerNames + (players.length > maxPlayers ? `\n...and ${players.length - maxPlayers} more` : ""),
-                    thumbnail: {
-                        url: logoURL
-                    }
-                }
-            });
-        }
-        else
-        {
-            bot.sendMessage({
+            return bot.sendMessage({
                 to: channelID,
                 message: "",
                 embed: {
                     color: 14177600,
                     description: "No players are currently online.",
-                    thumbnail: {
-                        url: logoURL
-                    }
+                    thumbnail: { url: logoURL }
                 }
             });
         }
+
+        // Sort players by state (e.g., 'game' first), then level
+        players.sort((a, b) =>
+        {
+            const stateOrder = (s) => s === "game" ? 0 : 1;
+            return stateOrder(a.state) - stateOrder(b.state) || b.level - a.level;
+        });
+
+        const maxShown = 10;
+        const shownPlayers = players.slice(0, maxShown);
+
+        const fields = shownPlayers.map(p =>
+        {
+            const prestigeStr = p.prestige > 0 ? ` (P${p.prestige})` : "";
+            const levelStr = `Level ${p.level}${prestigeStr}`;
+            const stateStr = p.state === "game" ? "🟢 In Game" : "🟡 In Menu";
+
+            let details = stateStr;
+            if (p.serverName)
+            {
+                details += ` — ${p.serverName.replace(/\[.*?\]/g, "").trim()}`;
+            } else if (p.gameModeId)
+            {
+                details += ` — ${p.gameModeId.replace(/_/g, " ")}`;
+            }
+
+            return {
+                name: `${p.name} (${levelStr})`,
+                value: details,
+                inline: false
+            };
+        });
+
+        const extraCount = players.length - shownPlayers.length;
+
+        bot.sendMessage({
+            to: channelID,
+            message: "",
+            embed: {
+                color: 14177600,
+                title: `Online Players (${players.length})`,
+                description: extraCount > 0 ? `Showing ${maxShown} of ${players.length} players:` : "",
+                thumbnail: { url: logoURL },
+                fields: fields
+            }
+        });
+
     }
     catch (e)
     {
@@ -205,9 +229,7 @@ async function requestOnlinePlayers(channelID)
             embed: {
                 color: 14177600,
                 description: "Failed to retrieve online players.",
-                thumbnail: {
-                    url: logoURL
-                }
+                thumbnail: { url: logoURL }
             }
         });
     }
