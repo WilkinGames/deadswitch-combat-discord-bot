@@ -285,7 +285,7 @@ async function requestWeapon(channelID, weaponId)
             { name: "RPM", value: `${weapon.rpm}`, inline: true },
             { name: "Mobility", value: `${weapon.mobility}`, inline: true },
             { name: "Fire Mode", value: weapon.fireMode, inline: true },
-            { name: "Cost", value: `${formatNum(weapon.cost)} XP`, inline: true }
+            { name: "Cost", value: `${formatNum(weapon.cost)} Credits`, inline: true }
         ];
 
         bot.sendMessage({
