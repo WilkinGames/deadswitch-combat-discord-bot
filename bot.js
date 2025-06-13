@@ -57,6 +57,21 @@ bot.on("message", async (user, userID, channelID, message, evt) =>
             case "getOnline":
                 requestOnlinePlayers(channelID);
                 break;
+            case "getWeapon":
+                const weaponId = args[1];
+                if (weaponId)
+                {
+                    requestWeapon(channelID, weaponId.toLowerCase());
+                }
+                else
+                {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "*Missing weapon ID!*"
+                    });
+                }
+                break;
+
         }
     }
 });
@@ -185,7 +200,7 @@ async function requestOnlinePlayers(channelID)
 
         const fields = shownPlayers.map(p =>
         {
-            const prestigeStr = p.prestige > 0 ? ` (P${p.prestige})` : "";
+            const prestigeStr = p.prestige > 0 ? ` (Prestige ${p.prestige})` : "";
             const levelStr = `Level ${p.level}${prestigeStr}`;
             const stateStr = p.state === "game" ? "🟢 In Game" : "🟡 In Menu";
 
@@ -193,7 +208,8 @@ async function requestOnlinePlayers(channelID)
             if (p.serverName)
             {
                 details += ` — ${p.serverName.replace(/\[.*?\]/g, "").trim()}`;
-            } else if (p.gameModeId)
+            }
+            if (p.gameModeId)
             {
                 details += ` — ${p.gameModeId.replace(/_/g, " ")}`;
             }
@@ -229,6 +245,70 @@ async function requestOnlinePlayers(channelID)
             embed: {
                 color: 14177600,
                 description: "Failed to retrieve online players.",
+                thumbnail: { url: logoURL }
+            }
+        });
+    }
+}
+
+/**
+ * Retrieves and displays weapon stats.
+ * @param channelID 
+ * @param weaponId 
+ */
+async function requestWeapon(channelID, weaponId)
+{
+    try
+    {
+        const api = "https://dsc.wilkingames.net/api/getWeapons";
+        const res = await fetch(api);
+        const weapons = await res.json();
+
+        const weapon = weapons.find(w => w.id.toLowerCase() === weaponId);
+        if (!weapon)
+        {
+            return bot.sendMessage({
+                to: channelID,
+                message: "",
+                embed: {
+                    color: 14177600,
+                    description: "That weapon does not exist!",
+                    thumbnail: { url: logoURL }
+                }
+            });
+        }
+
+        // Build stats display
+        const fields = [
+            { name: "Type", value: weapon.type, inline: true },
+            { name: "Damage", value: `${weapon.damage}`, inline: true },
+            { name: "RPM", value: `${weapon.rpm}`, inline: true },
+            { name: "Mobility", value: `${weapon.mobility}`, inline: true },
+            { name: "Fire Mode", value: weapon.fireMode, inline: true },
+            { name: "Cost", value: `${formatNum(weapon.cost)} XP`, inline: true }
+        ];
+
+        bot.sendMessage({
+            to: channelID,
+            message: "",
+            embed: {
+                color: 14177600,
+                title: `${weapon.name}`,
+                thumbnail: { url: logoURL },
+                fields: fields
+            }
+        });
+
+    }
+    catch (e)
+    {
+        console.warn(e);
+        bot.sendMessage({
+            to: channelID,
+            message: "",
+            embed: {
+                color: 14177600,
+                description: "Failed to retrieve weapon data.",
                 thumbnail: { url: logoURL }
             }
         });
